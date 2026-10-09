@@ -249,11 +249,7 @@ Prefs::Prefs(Ntop* _ntop) {
   ls_proto = NULL;
   has_cmdl_trace_lvl = false;
 
-  gateway = new (std::nothrow) ServerConfiguration();
-  dns_servers = new (std::nothrow) ServerConfiguration();
-  ntp_servers = new (std::nothrow) ServerConfiguration();
-  dhcp_servers = new (std::nothrow) ServerConfiguration();
-  smtp_servers = new (std::nothrow) ServerConfiguration();
+  servers = new (std::nothrow) ServerConfiguration();
 
   customer_asn = new (std::nothrow) ASNConfiguration();
   sub_customer_asn = new (std::nothrow) ASNConfiguration();
@@ -373,11 +369,7 @@ Prefs::~Prefs() {
     ndpi_bitmap_free(s7comm_allowed_function_codes);
 #endif
 
-  if (gateway) delete gateway;
-  if (dns_servers) delete dns_servers;
-  if (ntp_servers) delete ntp_servers;
-  if (dhcp_servers) delete dhcp_servers;
-  if (smtp_servers) delete smtp_servers;
+  if (servers) delete servers;
 
   if (customer_asn) delete customer_asn;
   if (sub_customer_asn) delete sub_customer_asn;
@@ -3601,14 +3593,8 @@ void Prefs::setS7CommAllowedFunctionCodes(const char* function_codes) {
 /* *************************************** */
 
 void Prefs::reloadServersConfiguration() {
-ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reloading servers configurations");
-  gateway->reloadServerConfiguration((char*)CONST_GATEWAY_CONFIGURATION_REDIS_KEY);
-  dns_servers->reloadServerConfiguration((char*)CONST_DNS_SERVER_CONFIGURATION_REDIS_KEY);
-  ntp_servers->reloadServerConfiguration((char*)CONST_NTP_SERVER_CONFIGURATION_REDIS_KEY);
-ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reloading DHCP servers...");
-  dhcp_servers->reloadServerConfiguration((char*)CONST_DHCP_SERVER_CONFIGURATION_REDIS_KEY);
-ntop->getTrace()->traceEvent(TRACE_NORMAL, "Reloading DHCP servers done");
-  smtp_servers->reloadServerConfiguration((char*)CONST_SMTP_SERVER_CONFIGURATION_REDIS_KEY);
+  ntop->getTrace()->traceEvent(TRACE_INFO, "Reloading servers configurations");
+  if (servers) servers->reloadServersConfiguration();
 }
 
 /* *************************************** */
@@ -3718,36 +3704,6 @@ AddressTree* Prefs::getNetworksPolicyConfiguration() {
   return networks_policy_configuration;
 }
 #endif
-
-/* *************************************** */
-
-bool Prefs::isGateway(IpAddress* ip, u_int16_t vlan_id) {
-  return (gateway->findAddress(ip, vlan_id));
-}
-
-/* *************************************** */
-
-bool Prefs::isDNSServer(IpAddress* ip, u_int16_t vlan_id) {
-  return (dns_servers->findAddress(ip, vlan_id));
-}
-
-/* *************************************** */
-
-bool Prefs::isNTPServer(IpAddress* ip, u_int16_t vlan_id) {
-  return (ntp_servers->findAddress(ip, vlan_id));
-}
-
-/* *************************************** */
-
-bool Prefs::isDHCPServer(IpAddress* ip, u_int16_t vlan_id) {
-  return (dhcp_servers->findAddress(ip, vlan_id));
-}
-
-/* *************************************** */
-
-bool Prefs::isSMTPServer(IpAddress* ip, u_int16_t vlan_id) {
-  return (smtp_servers->findAddress(ip, vlan_id));
-}
 
 /* *************************************** */
 

@@ -318,6 +318,8 @@ typedef enum {
   HOST_TAG_S7COMM_SERVER      = 11,
   HOST_TAG_PROFINET_SERVER    = 12,
   HOST_TAG_NON_PQC_COMPLIANT  = 13,
+  HOST_TAG_POWERSHELL_SERVER  = 14,
+  HOST_TAG_FTP_SERVER         = 15,
 } HostTagId;
 
 #define IFACE_DHCP_RANGE_KEY "ntopng.prefs.ifid_%u.dhcp_ranges"
@@ -450,20 +452,33 @@ typedef enum {
 #define MAX_NUM_LOCAL_NETWORKS 1024
 #define CONST_MAX_NUM_CHECKPOINTS 4
 
-/* Keep in sync with Utils::hostService2str */
-#define HOST_SERVICE_DHCP 0x01
-#define HOST_SERVICE_DNS 0x02
-#define HOST_SERVICE_NTP 0x03
-#define HOST_SERVICE_SMTP 0x04
-#define HOST_SERVICE_IMAP 0x05
-#define HOST_SERVICE_POP 0x06
-#define HOST_SERVICE_HTTP 0x07
-#define HOST_SERVICE_SSH 0x08
-#define HOST_SERVICE_RDP 0x09
-#define HOST_SERVICE_MODBUS 0x0A
-#define HOST_SERVICE_S7COMM 0x0B
-#define HOST_SERVICE_PROFINET 0x0C
-#define NUM_HOST_SERVICES HOST_SERVICE_PROFINET /* Update this */
+/* Service types used both for services detected from traffic and
+ * for servers configured in Network Configuration.
+ * Important notes:
+ * - Values are exported to db, do not change the order.
+ * - Keep in sync with Utils::hostService2str and Host::getTags */
+typedef enum {
+  HOST_SERVICE_NONE = 0, /* Bit 0 unused */
+  HOST_SERVICE_DHCP = 1,
+  HOST_SERVICE_DNS = 2,
+  HOST_SERVICE_NTP = 3,
+  HOST_SERVICE_SMTP = 4,
+  HOST_SERVICE_IMAP = 5,
+  HOST_SERVICE_POP = 6,
+  HOST_SERVICE_HTTP = 7,
+  HOST_SERVICE_SSH = 8,
+  HOST_SERVICE_RDP = 9,
+  HOST_SERVICE_MODBUS = 10,
+  HOST_SERVICE_S7COMM = 11,
+  HOST_SERVICE_PROFINET = 12,
+  HOST_SERVICE_GATEWAY = 13,
+  HOST_SERVICE_POWERSHELL = 14,
+  HOST_SERVICE_FTP = 15,
+  /* Max 31! */
+  HOST_SERVICE_MAX /* Keep it last */
+} HostService;
+
+#define NUM_HOST_SERVICES (HOST_SERVICE_MAX - 1)
 
 #define MAX_DYNAMIC_STATS_VALUES 12
 
@@ -1774,16 +1789,8 @@ extern NtopngLuaContext* getUserdata(struct lua_State* vm);
 #define CONST_DEFAULT_TLS_CIPHERS "HIGH:!aNULL:!MD5:!RC4"
 #define CONST_ZMQ_PAYLOAD_LEN 131072 /* 128k max ZMQ message size */
 
-#define CONST_GATEWAY_CONFIGURATION_REDIS_KEY \
-  "ntopng.prefs.nw_config_gateway_list"
-#define CONST_DNS_SERVER_CONFIGURATION_REDIS_KEY \
-  "ntopng.prefs.nw_config_dns_list"
-#define CONST_NTP_SERVER_CONFIGURATION_REDIS_KEY \
-  "ntopng.prefs.nw_config_ntp_list"
-#define CONST_DHCP_SERVER_CONFIGURATION_REDIS_KEY \
-  "ntopng.prefs.nw_config_dhcp_list"
-#define CONST_SMTP_SERVER_CONFIGURATION_REDIS_KEY \
-  "ntopng.prefs.nw_config_smtp_list"
+/* Configured servers list. %s is the service name (Utils::hostService2str) */
+#define CONST_SERVICE_CONFIGURATION_REDIS_KEY "ntopng.prefs.nw_config_%s_list"
 
 #define CONST_CUSTOMER_ASN_CONFIGURATION_REDIS_KEY \
   "ntopng.prefs.config_customer_asn_list"
